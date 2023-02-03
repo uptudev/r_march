@@ -1,0 +1,19 @@
+[package]
+name = "r_march"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nalgebra = "0.32.1"
+nalgebra-glm = "0.18.0"
+glium = "0.32.1"
+gl33 = "0.2.1"
+bytemuck = "1.13.0"
+beryllium = "0.9.0"
+num-traits = "0.2.15"
+simba = "0.8.0"
+
+[dev-dependencies]
+imagine = "0.3.1"
