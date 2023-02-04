@@ -3,6 +3,9 @@ use beryllium::{
     video::{CreateWinArgs, GlProfile},
     *, events::Event,
 };
+use fermium::video::SDL_GL_GetProcAddress;
+
+use gl33::global_loader as _gl;
 
 mod libs;
 
@@ -30,14 +33,21 @@ fn main() {
         resizable: true,
     };
 
-    /* Make window */
+    /* Window and OpenGL boilerplate */
     let _win = sdl
         .create_gl_window(_win_args)
         .expect("couldn't make a window and context");
 
+    unsafe {
+        _gl::load_global_gl(
+            &|p| 
+            SDL_GL_GetProcAddress(p.cast::<i8>()) as _);
+        _gl::glClearColor(0.2, 0.3, 0.3, 1.0);
+    }
+    /* Main event polling loop */
     'main_loop: loop {
         // handle events this frame
-        while let Some(event) = sdl.poll_events().and_then(Result::ok) { // Doesn't work like tutorial???
+        while let Some(event) = sdl.poll_events().and_then(parse_event) {
             match event {
                 Event::Quit => break 'main_loop,
                 _ => (),
@@ -47,4 +57,8 @@ fn main() {
     
     // here's where we could change the world state and draw.
     }
+}
+
+fn parse_event(e:(Event, u32)) -> Option<Event>{
+   Option::from(e.0) 
 }
