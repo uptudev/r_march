@@ -7,11 +7,10 @@ use beryllium::{
     *,
 };
 use gl33::global_loader::{self as glob};
-use gl33::*;
-
+use gl33::{GL_COLOR_BUFFER_BIT, GL_FLOAT, GL_STATIC_DRAW, GL_TRIANGLES};
 #[allow(dead_code)]
 mod libs;
-use libs::gl::{*, Buffer};
+use libs::gl::{Buffer, ShaderProgram, *};
 
 fn main() {
     /* Start SDL and run setup */
@@ -83,8 +82,8 @@ fn main() {
         GL_STATIC_DRAW,
     );
 
+    /* Tell OpenGL how to parse the buffered data */
     unsafe {
-        /* Tell OpenGL how to parse the buffered data */
         _gl.VertexAttribPointer(
             0,
             3,
@@ -93,74 +92,16 @@ fn main() {
             size_of::<Vertex>().try_into().unwrap(),
             0 as *const _,
         );
-
-        /* Create vertex GLSL shader */
-        let vertex_shader = _gl.CreateShader(GL_VERTEX_SHADER);
-        assert_ne!(vertex_shader, 0);
-        _gl.ShaderSource(
-            vertex_shader,
-            1,
-            &(_VERTEX_GLSL.as_bytes().as_ptr().cast()),
-            &(_VERTEX_GLSL.len().try_into().unwrap()),
-        );
-        _gl.CompileShader(vertex_shader);
-
-        /* Error checking vertex shader */
-        let mut success = 0;
-        _gl.GetShaderiv(vertex_shader, GL_COMPILE_STATUS, &mut success);
-        if success == 0 {
-            let mut v: Vec<u8> = Vec::with_capacity(1024);
-            let mut log_len = 0_i32;
-            _gl.GetShaderInfoLog(vertex_shader, 1024, &mut log_len, v.as_mut_ptr().cast());
-            v.set_len(log_len.try_into().unwrap());
-            panic!("Compile Error: {}", String::from_utf8_lossy(&v));
-        }
-
-        /* Create fragment GLSL shader */
-        let fragment_shader = _gl.CreateShader(GL_FRAGMENT_SHADER);
-        assert_ne!(fragment_shader, 0);
-        _gl.ShaderSource(
-            fragment_shader,
-            1,
-            &(_FRAGMENT_GLSL.as_bytes().as_ptr().cast()),
-            &(_FRAGMENT_GLSL.len().try_into().unwrap()),
-        );
-        _gl.CompileShader(fragment_shader);
-
-        /* Error checking fragment shader */
-        let mut success = 0;
-        _gl.GetShaderiv(fragment_shader, GL_COMPILE_STATUS, &mut success);
-        if success == 0 {
-            let mut v: Vec<u8> = Vec::with_capacity(1024);
-            let mut log_len = 0_i32;
-            _gl.GetShaderInfoLog(fragment_shader, 1024, &mut log_len, v.as_mut_ptr().cast());
-            v.set_len(log_len.try_into().unwrap());
-            panic!("Compile Error: {}", String::from_utf8_lossy(&v));
-        }
-
-        /* Create and attach shaders to shader program */
-        let shader_program = _gl.CreateProgram();
-        _gl.AttachShader(shader_program, vertex_shader);
-        _gl.AttachShader(shader_program, fragment_shader);
-        _gl.LinkProgram(shader_program);
-
-        /* Error check shader program */
-        let mut success = 0;
-        _gl.GetProgramiv(shader_program, GL_LINK_STATUS, &mut success);
-        if success == 0 {
-            let mut v: Vec<u8> = Vec::with_capacity(1024);
-            let mut log_len = 0_i32;
-            _gl.GetProgramInfoLog(shader_program, 1024, &mut log_len, v.as_mut_ptr().cast());
-            v.set_len(log_len.try_into().unwrap());
-            panic!("Program Link Error: {}", String::from_utf8_lossy(&v));
-        }
-
-        _gl.DeleteShader(vertex_shader);
-        _gl.DeleteShader(fragment_shader);
-        _gl.UseProgram(shader_program);
-        _win.set_swap_interval(GlSwapInterval::Vsync)
-            .expect("Error enabling VSync.");
     }
+
+    /* Create shader program and attach shaders from source code strings */
+    let shader_program = ShaderProgram::from_vert_frag(_VERTEX_GLSL, _FRAGMENT_GLSL)
+        .expect("Shader program failed to be made");
+    shader_program.use_program();
+
+    _win.set_swap_interval(GlSwapInterval::Vsync)
+        .expect("Error enabling VSync.");
+
     /* Main running loop */
     'main_loop: loop {
         // handle events this frame
@@ -175,8 +116,8 @@ fn main() {
         unsafe {
             _gl.Clear(GL_COLOR_BUFFER_BIT);
             _gl.DrawArrays(GL_TRIANGLES, 0, 3);
-            _win.swap_window();
         }
+        _win.swap_window();
     }
 }
 
