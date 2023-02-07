@@ -47,18 +47,35 @@ fn main() {
     type Vertex = [f32; 3];
     const _TRIVERTS: [Vertex; 3] = [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]];
 
-    const _VERTEX_GLSL: &str = r#"#version 330 core
+    #[allow(dead_code)]
+    const OLD_VERTEX_GLSL: &str = r#"#version 330 core
         layout (location = 0) in vec3 pos;
         void main() {
             gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
         }
         "#;
-    const _FRAGMENT_GLSL: &str = r#"#version 330 core
+    
+    #[allow(dead_code)]
+    const OLD_FRAGMENT_GLSL: &str = r#"#version 330 core
         out vec4 final_color;
         void main() {
             final_color = vec4(1.0, 0.5, 0.2, 1.0);
         }
         "#;
+
+    let _vertex_glsl_src: String =
+        std::fs::read_to_string("./src/shaders/vert.glsl")
+            .expect("Couldn't read vertex shader GLSL files.");
+    
+    let _fragment_glsl_src: String =
+        std::fs::read_to_string("./src/shaders/frag.glsl")
+            .expect("Couldn't read fragment shader GLSL files.");
+
+    let _vertex_glsl: &str =
+        &_vertex_glsl_src.as_str();
+
+    let _fragment_glsl: &str =
+        &_fragment_glsl_src.as_str();
 
     unsafe {
         /* Load OpenGL functions from _win to _gl */
@@ -95,7 +112,7 @@ fn main() {
     }
 
     /* Create shader program and attach shaders from source code strings */
-    let shader_program = ShaderProgram::from_vert_frag(_VERTEX_GLSL, _FRAGMENT_GLSL)
+    let shader_program = ShaderProgram::from_vert_frag(OLD_VERTEX_GLSL, OLD_FRAGMENT_GLSL)
         .expect("Shader program failed to be made");
     shader_program.use_program();
 
