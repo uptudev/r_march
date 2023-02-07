@@ -3,45 +3,45 @@ extern crate nalgebra_glm as glm;
 use glm::{DVec3, TVec};
 
 /// **normalize**
-/// 
+///
 /// See xq_norm()
 fn normalize(x: &DVec3) -> DVec3 {
     let nrm: DVec3 = norm(x);
-    let cln:DVec3 = DVec3::new(x[0], x[1], x[2]);
+    let cln: DVec3 = DVec3::new(x[0], x[1], x[2]);
 
-    return DVec3::new(cln[0]/nrm[0], cln[1]/nrm[1], cln[2]/nrm[2]);
+    return DVec3::new(cln[0] / nrm[0], cln[1] / nrm[1], cln[2] / nrm[2]);
 }
 
 /// **xq_norm**
-/// 
+///
 /// Runs a vector for `x / norm(x)`, which returns `x` multiplied by the inverse of normalized `x`.
 fn xq_norm(x: &DVec3) -> DVec3 {
     normalize(x)
 }
 
 /// **norm_sq**
-/// 
+///
 /// See dot_product()
 fn norm_sq(x: &DVec3) -> f64 {
     x.dot(x)
 }
 
 /// **dot_product**
-/// 
+///
 /// Gets the dot product for a given vector.
 fn dot_product(x: &DVec3) -> f64 {
     norm_sq(x)
 }
 
 /// **norm**
-/// 
+///
 /// Gets a normalized vector.
 fn norm(x: &DVec3) -> DVec3 {
     return glm::normalize(x);
 }
 
 /// **get_sub_keys**
-/// 
+///
 /// Gets sub keys pushed from GLSL.
 fn get_sub_keys<T, const R: usize>(v: &TVec<T, R>) -> Vec<String>
 where
@@ -57,14 +57,14 @@ where
 }
 
 /// **to_vec3_from_f64**
-/// 
+///
 /// Returns a given 3D vector populated with a given `f64` in all 3 axes.
 fn to_vec3_from_f64(x: f64) -> DVec3 {
     glm::vec3(x, x, x)
 }
 
 /// **to_str**
-/// 
+///
 /// Returns a boolean represented as a String.
 fn to_str(x: bool) -> String {
     if x {
@@ -75,14 +75,14 @@ fn to_str(x: bool) -> String {
 }
 
 /// **slice_to_string**
-/// 
+///
 /// Returns a String populated by a `_` literal followed by the given string slice.
 fn slice_to_str(x: &str) -> String {
     return String::from("_") + x;
 }
 
 /// **vec3_str**
-/// 
+///
 /// Returns a string representation of a 3D vector.
 fn vec3_str(x: &DVec3) -> String {
     String::from("vec3(")
@@ -93,18 +93,35 @@ fn vec3_str(x: &DVec3) -> String {
         + &x[2].to_string()[..]
         + ")"
 }
+
 /// **q_half**
-/// 
+///
 /// Returns 1/2 of a given float in a much faster way than doing `x/2`.
-fn q_half(x:f64) -> f64{
-    let i:u64 = x.to_bits(); // Deconstruct to bits
-    f64::from_bits(i << 1)
+/// Also see `q_half32(x: f32)` for the 32-bit version.
+///
+/// This method relies on one of the intrinsic properties of binary notation, where shifting bits to the left or right divides or multiplies them by 2.
+/// This is the same method used to get a quick inverse square root in the Quake algorithm I ported at https://github.com/uptudev/rust_tut/blob/main/src/basics.rs.
+fn q_half(x: f64) -> f64 {
+    let i: u64 = x.to_bits(); // Deconstruct to bits
+    f64::from_bits(i << 1) // Bit-shift and reconstruct
+}
+
+/// **q_half32**
+///
+/// Returns 1/2 of a given 32-bit float in a much faster way than doing `x/2`.
+/// Also see `q_half(x: f64)` for the 64-bit version.
+///
+/// This method relies on one of the intrinsic properties of binary notation, where shifting bits to the left or right divides or multiplies them by 2.
+/// This is the same method used to get a quick inverse square root in the Quake algorithm I ported at https://github.com/uptudev/rust_tut/blob/main/src/basics.rs.
+fn q_half32(x: f32) -> f32 {
+    let i: u32 = x.to_bits(); // Deconstruct to bits
+    f32::from_bits(i << 1) // Bit-shift and reconstruct
 }
 
 /// **vec3_eq**
-/// 
+///
 /// Returns true if vector `v` is populated with the same values as vector `w`.
-fn vec3_eq(v:DVec3, w:DVec3) -> bool{
+fn vec3_eq(v: DVec3, w: DVec3) -> bool {
     let mut i = 0;
     while i < 3 {
         if v[i] != w[i] {
@@ -116,8 +133,8 @@ fn vec3_eq(v:DVec3, w:DVec3) -> bool{
 }
 
 /// **smin**
-/// 
+///
 /// Does some math; will update when I find context other than identical shader fn
-fn smin(a:f64, b:f64, k:f64) -> f64{
-    f64::min(f64::max(0.5 + q_half(b-a)/k, 0.0), 1.0)
+fn smin(a: f64, b: f64, k: f64) -> f64 {
+    f64::min(f64::max(0.5 + q_half(b - a) / k, 0.0), 1.0)
 }

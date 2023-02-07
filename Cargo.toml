@@ -9,7 +9,7 @@ edition = "2021"
 nalgebra = "0.32.1"
 nalgebra-glm = "0.18.0"
 glium = "0.32.1"
-gl33 = "0.2.1"
+gl33 = {version="0.2.1", features = ["global_loader"]}
 bytemuck = "1.13.0"
 fermium = "22401.1.0"
 beryllium = "0.9.0"
